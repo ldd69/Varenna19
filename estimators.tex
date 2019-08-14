@@ -1,7 +1,71 @@
+\section{Estimators}
+\label{sec:estimators}
+
 \subsection{Bias and Variance}
 \label{sec:BandV}
 
-{\bf LDD to write}
+First let us recall the standard definitions of {\em Bias}\ and {\em Variance}.
+Following the approach in Ref.~\cite{Mehta:2018dln}, we consider a set of $n$
+data points, which we denote $D_n=\left(x,y\right)$, where $x,y \in \Rn$,
+generated according to some noisy model:
+\begin{equation}
+    \label{eq:NoisyData}
+    y_i = f(x_i) + \epsilon\, ,    
+\end{equation}
+where $\epsilon\sim\mathcal{N}(0,\sigma)$. The function $f(x,\theta)$, which
+depends on a set of parameters $\theta$, allows us to predict the value of $y$
+for a new data point $x_{n+1}$. It is obtained by minimizing some cost function,
+\eg
+\begin{equation}
+    \label{eq:CostFuncChi}
+    \chi^2(\theta; D_n) = \sum_{i=1}^n 
+    \frac{\left[
+        y_i - f(x_i,\theta)
+    \right]^2}{\sigma^2}\, . 
+\end{equation}
+Note that in this case we are using the same $\sigma$ for all data points, and
+therefore the denominator in the definition of $\chi^2$ is just an irrelevant
+overall normalization. It is easy to generalize the discussion to the case of a
+proper covariance matrix. The best fit for a given set of data is 
+\begin{equation}
+    \label{eq:ThetaMin}
+    \theta_D = \arg\min_\theta \chi^2(\theta; D_n)\, .
+\end{equation} 
+Clearly the value of $\chi^2$ at the minimum depends on the particular dataset
+\begin{equation}
+    \label{eq:ChiAtMin}
+    \chi^2_\mathrm{min}=\chi^2(\theta_D; D_n)\, . 
+\end{equation}
+We will be drawing an ensemble of datasets from the distribution above, and denote by $\mathbb{E}_D$ the average over these datasets.
+
+We define the average over the Gaussian variable $\epsilon$ by
+$\mathbb{E}_\epsilon$, and decompose the generalization error as 
+\begin{align}
+    \label{eq:GenErr}
+    &\mathbb{E}_{D,\epsilon}\left[\chi^2(\theta_D; D_n)/n\right] = \nonumber \\
+    &\quad = \mathbb{E}_{D,\epsilon}\left[
+        \frac{1}{n}\, \sum_{i=1}^n 
+        \frac{\Big(
+            y_i - f(x_i,\theta_D)
+        \Big)^2}{\sigma^2}   
+    \right] \\
+    &\quad = \frac{1}{n}\, \sum_{i=1}^n \left[
+        \frac{\mathbb{E}_\epsilon\left[
+            \Big(y_i - f(x_i)\Big)^2    
+        \right]}{\sigma^2}    
+        + \frac{\mathbb{E}_D\left[\Big(f(x_i)-f(x_i,\theta_D)\Big)^2\right]}{\sigma^2}
+    \right] \\
+    &\quad = 1 + \frac{1}{n}\, \sum_{i=1}^n \left[
+            \frac{\Big(f(x_i) - \mathbb{E}_D\left[f(x_i,\theta_D)\right]\Big)^2}{\sigma^2}
+        \right] + \nonumber \\
+    &\quad \quad +
+        \frac{1}{n}\, \sum_{i=1}^n \left[
+            \frac{\mathbb{E}_D\left[\Big(f(x_i,\theta_D) - \mathbb{E}_D\left[f(x_i,\theta_D)\right]\Big)^2\right]}{\sigma^2}
+        \right]\, . 
+\end{align}
+These three contributions are known as {\em noise}, {\em Bias}\ and {\em Variance} respectively.
+
+In the \nnpdf\ methodology, the average over $\epsilon$ is the average over replicas (or level 2 noise). The average over sets of data can be obtained by bootstrap, \ie\ by selecting randomly subsets of the whole set of data.  
 
 \subsection{Re-examining closure test estimators}
 
