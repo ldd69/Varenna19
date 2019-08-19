@@ -7,4 +7,10 @@ For each experiment we want to check the experimental covariance matrix that has
 been implemented in the \nnpdf code. Ideally we want this check to be
 implemented as part of \valid. 
 
+We should always work in the basis of eigenvectors of the covariance matrix. The
+first step when implemnting experiments should be the diagonalization of the
+covariance matrix, checking the eigenvectors. The matrix should also be
+projected on the nearest positive definite matrix, so that any numerical
+instability is under control. 
+
 {\bf MW to write}
