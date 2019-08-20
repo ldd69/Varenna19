@@ -45,7 +45,12 @@ We need to specify each of these steps in our procedure.
 \subsection{Parametric Models}
 \label{sec:BaysParMod}
 
-There are interesting results on parametric models, which are useful to understand the idea behind BO. 
+There are interesting results on parametric models, which are useful to
+understand the idea behind BO. In parametric models the function $f$ is
+specified by a set of parameters $w$. The current knowledge of $f$ is then
+encoded in the probability distribution of these parameters. 
+
+\paragraph[]{Explicit Examples}
 
 \subsection{Non-parametric Models}
 \label{sec:BaysNonParMod}
@@ -112,4 +117,7 @@ The acquisition function favours points that are likely to exceed some target va
         \frac{\mu_n(x)-t}{\sigma_n(x)}    
     \right)\, ,
 \end{equation}
-where $\Phi$ is the normal cumulative distribution function. 
+where $\Phi$ is the normal cumulative distribution function, \ie\ $\Phi(\zeta)$
+is the integral of a Gassian distribution with unit variance from $-\infty$ to
+$\zeta$. This choice corresponds to the utility function $U(x,v)=\Ibb\left[v>\tau\right]$ being marginalised over $v$.
+
