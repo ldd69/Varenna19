@@ -119,5 +119,18 @@ The acquisition function favours points that are likely to exceed some target va
 \end{equation}
 where $\Phi$ is the normal cumulative distribution function, \ie\ $\Phi(\zeta)$
 is the integral of a Gassian distribution with unit variance from $-\infty$ to
-$\zeta$. This choice corresponds to the utility function $U(x,v)=\Ibb\left[v>\tau\right]$ being marginalised over $v$.
+$\zeta$. This choice corresponds to the utility function
+$U(x,v)=\Ibb\left[v>\tau\right]$ being marginalised over $v$.
 
+A similar acquisiton function can be defined trying to quantify the amount of
+improvement. In this case the utility function is
+\begin{equation}
+    \label{eq:EIUtil}
+    U(x,v) = (v-\tau) \Ibb\left[v>\tau\right]\, ,
+\end{equation}
+and the acquisition function is defined as above by taking the expectation value with respect to $v$:
+\begin{equation}
+    \label{eq:EIAcq}
+    \alpha_\EI \left(x;\mathcal{D}_n\right) = 
+    \Ebb\left[U(v,x)\right]\, .
+\end{equation}
