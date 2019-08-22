@@ -12,15 +12,18 @@ generated according to some noisy model:
     \label{eq:NoisyData}
     y_i = f(x_i) + \epsilon_i\, ,    
 \end{equation}
-where $\epsilon\sim\mathcal{N}(0,\sigma)$. The function $f(x,\theta)$, which
+where $\epsilon\sim\mathcal{N}(0,\sigma)$. The function $g(x,\theta)$, which
 depends on a set of parameters $\theta$, allows us to predict the value of $y$
 for a new data point $x_{n+1}$. It is obtained by minimizing some cost function,
 \eg
 \begin{equation}
     \label{eq:CostFuncChi}
+    % TODO: Consider changing this to \chi^2(g(x,\theta); D_n)
+    % (clearly the chi2 of the function depending on theta compared to D_n)
+    % possibly this is unneccessary though: should define mathcal D as level 1
     \chi^2(\theta; D_n) = \sum_{i=1}^n 
     \frac{\Big(
-        y_i - f(x_i,\theta)
+        y_i - g(x_i,\theta)
     \Big)^2}{\sigma^2}\, . 
 \end{equation}
 Note that in this case we are using the same $\sigma$ for all data points, and
@@ -29,107 +32,240 @@ overall normalization. It is easy to generalize the discussion to the case of a
 proper covariance matrix. The best fit for a given set of data is 
 \begin{equation}
     \label{eq:ThetaMin}
-    \theta_D = \arg\min_\theta \chi^2(\theta; D_n)\, .
-\end{equation} 
-Clearly the value of $\chi^2$ at the minimum depends on the particular dataset
-\begin{equation}
-    \label{eq:ChiAtMin}
-    \chi^2_\mathrm{min}=\chi^2(\theta_D; D_n)\, . 
+    \theta_D = {\arg\min}_\theta \chi^2(\theta; D_n)\, .
 \end{equation}
-We will be drawing an ensemble of datasets from the distribution above, and denote by $\mathbb{E}_D$ the average over these datasets.
 
-We define the average over the Gaussian variable $\epsilon$ by
-$\mathbb{E}_\epsilon$, and decompose the generalization error as 
+%Clearly the value of $\chi^2$ at the minimum depends on the particular dataset
+%\begin{equation}
+%    \label{eq:ChiAtMin}
+%    \chi^2_\mathrm{min}=\chi^2(\theta_D; D_n)\, . 
+%\end{equation}
+%We will be drawing an ensemble of datasets from the distribution above,
+%and denote by $\mathbb{E}_D$ the average over these datasets.
+Clearly the parameters which minimise $\chi^2$ for a given set of data points
+depends on $D_n$, denoted by the subscript $D$. In the end we are interested in
+defining a generalisation error on a finite set of total data which we split
+into two subsets, data used in the training procedure
+(both training and validation) which we denote as $\{ D \}$
+and data used as a test set which we define as $\{ D' \}$. The generalisation
+error is then defined as
+\begin{equation}
+    \label{eq:DefGenErr}
+    \chi^2(\theta_D; D'_{n'}) = \sum_{i=1}^{n'}
+    \frac{\Big(
+        y'_i - g(x'_i,\theta_D)
+    \Big)^2}{\sigma^2}\, ,
+\end{equation}
+where we have very explicitly defined that the generalization error is where we
+take the function $g$ with parameters fitted on $D_n$ and then calculate the
+$\chi^2$ of this function compared to the test set data $D'_{n'}$.
+
+Replicas of the function $g$ can be fitted on the same set of points $\{ x\}$
+but with different ensembles of noise $\{ \epsilon\} $, which is the same as
+the Monte-Carlo replicas we use in current fits. We define the average over the
+Gaussian variable $\epsilon$ by $\mathbb{E}_\epsilon$. Care should be taken
+since both the data $D_n$ and the function $g(x,\theta_D)$ depend on $\epsilon$.
+The generalization error can then be decomposed, with the expectation over
+$\epsilon$ taken
 \begin{align}
     \label{eq:GenErr}
-    &\mathbb{E}_{D,\epsilon}\left[\chi^2(\theta_D; D_n)/n\right] = \nonumber \\
-    &\quad = \mathbb{E}_{D,\epsilon}\left[
+    &\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; D_n)/n\right] = \nonumber \\
+    &\quad = \mathbb{E}_{\epsilon}\left[
         \frac{1}{n}\, \sum_{i=1}^n 
         \frac{\Big(
-            y_i - f(x_i,\theta_D)
+            y_i - g(x_i,\theta_D)
         \Big)^2}{\sigma^2}   
     \right] \\
     &\quad = \frac{1}{n}\, \sum_{i=1}^n \left[
         \frac{\mathbb{E}_\epsilon\left[
             \Big(y_i - f(x_i)\Big)^2    
         \right]}{\sigma^2}    
-        + \frac{\mathbb{E}_{D,\epsilon}\left[\Big(f(x_i)-f(x_i,\theta_D)\Big)^2\right]}{\sigma^2}
+        + \frac{\mathbb{E}_{\epsilon}\left[\Big(f(x_i)-g(x_i,\theta_D)\Big)^2\right]}{\sigma^2}
     \right] \\
     &\quad = 1 + \frac{1}{n}\, \sum_{i=1}^n \left[
-            \frac{\Big(f(x_i) - \mathbb{E}_{D,\epsilon}\left[f(x_i,\theta_D)\right]\Big)^2}{\sigma^2}
+            \frac{\Big(f(x_i) - \mathbb{E}_{\epsilon}\left[g(x_i,\theta_D)\right]\Big)^2}{\sigma^2}
         \right] + \nonumber \\
     &\quad \quad +
         \frac{1}{n}\, \sum_{i=1}^n \left[
             \frac{
-                \Ebb_{D,\epsilon}\left[\Big(f(x_i,\theta_D) - 
-                \Ebb_{D,\epsilon}\left[f(x_i,\theta_D)\right]\Big)^2\right]
+                \Ebb_{\epsilon}\left[\Big(g(x_i,\theta_D) - 
+                \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right]\Big)^2\right]
             }{\sigma^2}
         \right]\, . 
 \end{align}
-These three contributions are known as {\em Noise}, {\em Bias}\ and {\em Variance} respectively.
+These three contributions are known as {\em Noise}, {\em Bias}\ and {\em Variance}
+respectively.
 
-\paragraph[]{Averages:} In the \nnpdf\ methodology, the average over $\epsilon$
-is the average over replicas (or level 2 noise). The average over sets of data
-can be obtained by bootstrap, \ie\ by selecting randomly subsets of the whole
-dataset.  
+\subsection{Bias and Variance for \nnpdf\ fit}
 
-\subsection{Re-examining closure test estimators}
+Whilst it is clear in the \nnpdf\ case the average of $\epsilon$ is the average
+over replicas (or level 2 noise), it isn't entirely clear what will happen in
+the presence of a level 1 shift $\eta$. Even outside of a closure test it is
+understood that the central values given by experimentalists implictly contain
+a term like $\eta$ such that we can define $\mathcal{D} = (x, \levone)$ such that
+$\levone$ represents the level 1 data or experimental central value
+\begin{equation}
+    \label{eq:DefLev1}
+    \levone_{i} = f(x_i) + \eta_i \, ,
+\end{equation}
+and then the level 2 data is defined as
+\begin{align}
+    \label{eq:DefLev2}
+    y_{i} &= \levone_i + \epsilon_i \\
+    &= f(x_i) + \eta_i  + \epsilon_i \, .
+\end{align}
+Also at the end of the fit we don't calculate $\chi^2(\theta_D; D_n)$ comparing
+the fitted function to the noisey level 2 data but instead calculate something
+like
+\begin{equation}
+    \label{eq:DefRepChi2}
+    \chi^2(\theta_D; \mathcal{D}_{n}) = \sum_{i=1}^{n}
+    \frac{\Big(
+        \levone_i - g(x_i,\theta_D)
+    \Big)^2}{\sigma^2}\, ,
+\end{equation}
+the $\chi^2$ of a given replica function on the level 1 data. We can still
+consider calculating this object on a test set $\mathcal{D}'_{n'}$ and then
+taking the expectation across replicas and perform the decomposition as before
+\begin{align}
+    & \mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}'_{n'})/n'\right] = \nonumber\\
+    & \quad = \mathbb{E}_{\epsilon}\left[
+        \frac{1}{n'}\, \sum_{i=1}^{n'} 
+        \frac{\left(
+            \levone'_i - g(x'_i,\theta_D)
+        \right)^2}{\sigma^2}   
+    \right] \\
+    & \quad = \frac{1}{n'}\, \sum_{i=1}^{n'} \Bigg[
+        \frac{\left[
+            \left(\levone'_i - f(x'_i)\right)^2    
+        \right]}{\sigma^2}    
+        + \frac{
+            \mathbb{E}_{\epsilon}\left[\left(f(x'_i)-g(x'_i,\theta_D)\right)^2\right]
+            }{\sigma^2} + \nonumber \\
+    & \quad \quad + 2\frac{\mathbb{E}_{\epsilon}
+    \left[
+        \left(\levone'_i - f(x'_i)\right)\left(f(x'_i)-g(x'_i,\theta_D)\right)
+    \right]}{\sigma^2}
+    \Bigg] \\
+    & \quad = \frac{1}{n'}\, \sum_{i=1}^{n'}
+        \frac{{\eta'}_i^2}{\sigma^2} +
+    \frac{1}{n'}\, \sum_{i=1}^{n'} \frac{
+        \left(f(x'_i) - \mathbb{E}_{\epsilon}\left[g(x'_i,\theta_D)\right]\right)^2
+        }{\sigma^2} + \nonumber \\
+    & \quad \quad +
+    \frac{1}{n'}\, \sum_{i=1}^{n'} \frac{
+                \Ebb_{\epsilon}\left[\Big(g(x'_i,\theta_D) - 
+                \Ebb_{\epsilon}\left[g(x'_i,\theta_D)\right]\Big)^2\right]
+            }{\sigma^2} + \nonumber \\
+    & \quad \quad -
+    \frac{1}{n'}\, 2 \sum_{i=1}^{n'} \frac{\mathbb{E}_{\epsilon}
+        \left[
+            \left(\levone'_i - f(x'_i)\right)\left(g(x'_i,\theta_D) - f(x'_i)\right)
+        \right]}{\sigma^2} \, . \label{eq:NNPDFGenErr}
+\end{align}
+In the final line we now have 4 terms, the level 1 {\em Noise},
+{\em Bias}, {\em Variance} and a cross term respectively.
 
-{\bf my previous notation is not consistent with $D_0, D_1$ used here!}
+\paragraph[]{Note:} It's important to note that whilst the $\chi^2$ here was
+calculated on level 1 data, the only difference between calculating this quantity
+on level 1 vs. level 2 data is the Noise term, which is the least interesting
+term since it adds either 1 or 2 to the expectation of $\chi^2$ depending on
+whether we are looking at level 1 or level 2 data respectively, up to finite
+data fluctuations.
 
-Previously we motivated two additonal closure test estimators, in the space of data
-which in addition to the pre-existing $\dcs$ makes 3 estimators which are currently
-included in the \vphys closure report. To recap those estimators are:
+\paragraph[]{}
+The cross term can
+be thought of as the pull of the level 1 data on the underlying law times by
+the pull of the fitted function on the underlying law. Take care with the minus
+sign that was brought out the front of the cross term. The expectation over
+$\epsilon$ of the \nnpdf\ generalization error is currently called 
+$\langle \chi^2 \rangle$ in our reports with the key difference being that
+$\chi^2$ calculated on some test set of data. At present in a closure
+test report by default we have
+$\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}_{n})/n'\right]$,
+{\em Bias} and {\em Variance}. We also have $\Delta_{\chi^2}$ which will be
+dealt with in the next section along with the cross term we see above.
+
+\paragraph[]{Averages:} There is a residual dependence
+on the splitting of data into in-sample and test sets, with fast fits one can
+actually perform multiple fits on different splits and take compare the above
+estimators across different splits.
+
+\subsection{Completing the closure test estimator picture}
+
+In the previous section we spoke about the terms which appear when decomposing
+the expectation across replicas of $\chi^2$. We can explicitly define the
+closure test estimators in the notation used above dropping the prime notation
+which just indicates that the estimator should be calculated on test set data
+if it is to be thought of as generalization.
 
 \subsubsection*{Bias}
 
-The bias is defined as the $\chis$ between the central theory prediction, $\thc$,
-and the level 0 data, $D_{0}$. This is clearly a measure of how far away the
+The bias is defined as the $\chi^2$ between the expected value of the model
+across replicas, $g(x, \theta_D)$, and the level 0 data,
+$f(x)$. This is clearly a measure of how far away the
 central prediciction is away from the underlying law, explictly defined as
 %
 \begin{equation}
-    \mathrm{bias} = \frac{1}{N_{\mathrm{data}}} \T{(\thc - D_{0})} C^{-1} (\thc - D_{0})
+    \label{eq:Biasdef}
+    \mathrm{bias} = \frac{1}{n} \sum_{i=1}^{n} \frac{(f(x_i) -
+    \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} \, .
 \end{equation}
 %
-where we have normalised over the number of data points $N_{\mathrm{data}}$. Ideally this should
-be minimised, but this isn't always so simple - adding parameters to the model
+Since we are aiming to produce the PDF set, the goal of a fit is to reproduce
+the underlying law. The caveat is that we can only calculate the bias in a
+closure test setting, and clearly don't have access to this quantity in a fit to
+experimental data.
+
+Adding parameters to the model
 typically lowers the bias as the model has freedom to fit the data better, however at some point the
-cost for lowering the bias is that the variance of the model increases, which brings us to the second
-statistical estimator
+cost for lowering the bias is that the variance of the model increases. In our
+case it's not as clear cut, since we have added a level 1 noise, and so adding
+additional parameters to the model could lead to a lower $\chis$ without the bias
+actually decreasing.
 
 \subsubsection*{Variance}
 
-This quantity goes alongside the bias and tells us the variability of the $\chis$ with the model. We
-already use this estimator in the fits, by a different name $\varphi$, in the case of a closure
-defined as
+This quantity goes alongside the bias and tells us the variability of the
+$\chis$ with the model. We already use this estimator in the fits, by a
+different name $\varphi$, in the case of a closure defined as
 %
 \begin{equation}
     \begin{split}
-        \mathrm{variance} &= \frac{1}{N_{\mathrm{rep}} N_{\mathrm{data}}} \sum_{k} \T{(\thc - T_{k})} C^{-1} (\thc - T_{k}) \\
-        &= \frac{1}{N_{\mathrm{rep}}} \left[ \langle \chis \left[ T_{k}, D_{1} \right] \rangle - \chis[\thc, D_{1}] \right]
+        \mathrm{variance} &= \frac{1}{n}\, \sum_{i=1}^{n} \frac{
+            \Ebb_{\epsilon}\left[\Big(g(x_i,\theta_D) - 
+            \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right]\Big)^2\right]
+        }{\sigma^2} \, .
     \end{split}
 \end{equation}
 %
-where $\langle \cdot \rangle$ should be understood as the mean across replicas. We see
-that the variance is just the average spread of replicas in the space of $\chis$.
+We see
+that the variance is just the average spread of replicas in units of the
+experimental error.
+
 Generally the aim of fitting is to reduce the bias whilst retaining a reasonable
-variance - this is commonly referred to as the bias-variance tradeoff.
+variance - this is commonly referred to as the bias-variance tradeoff. Again
+in the PDF fit there is a slight difference that the variance represents our PDF
+error and should be larger than the bias to ensure that the errorband on our
+PDF represents a reasonable quantile the true underlying law should reside
+within. A high bias low variance PDF would clearly be problematic.
 
 \subsubsection*{Delta chi2}
 
-We now turn to the final estimator - $\dcs$. The estimator was introduced in the
-3.0 paper alongside the closure test and was described as an estimator which told
-us how well the fit reproduced the underlying law. Here we will refine this definition
-with the help of the bias.
-
-We start with the definition of the $\dcs$
+The final estimator, $\dcs$, doesn't obviously appear in the decomposition of \newline
+$\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}_{n})/n'\right]$. 
+When it was introduced it was said to describe how well the model matched the
+underlying law. We start with the definition of the $\dcs$ with the notation
+used in this note
 %
 \begin{equation}
-    \dcs = \frac{\chis[\thc, D_{1}] - \chis[D_{0}, D_{1}]}{\chis[D_{0}, D_{1}]}
+        \dcs = \frac{
+            \sum_{i=1}^{n} \frac{(z_i -
+            \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} -
+            \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2}}{
+                \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2}} \, .
 \end{equation}
-the notation here differs slightly from the original notatation, but we can understand
-the $D_{0}$ as the theory prediction of the central input PDF. There were bounds given alongside
-$\dcs$ which described when the fit was overfitting
+Alongside $\dcs$ there were some bounds:
 %
 \begin{itemize}
     \item $\dcs < 0$ overfitting
@@ -137,62 +273,46 @@ $\dcs$ which described when the fit was overfitting
     \item $\dcs > 0$ underfitting 
 \end{itemize}
 %
-although these bounds intuitively make sense, it's not entirely clear if these
-bounds have any connection to the bias. If the bias increases but the $\dcs$ becomes
-less negative, do we understand this is a better or worse fit, and is that even consistent
-with the definition of overfitting given above?
-
-We can rephrase $\dcs$ in terms of the bias to help us here:
+which seem intuitive but the discussion of these bounds implies that bias and
+$dcs$ are linked, which is not immediately obvious. We can rewrite
+$\dcs$ removing the normalisation over the noise and replacing with normalisation
+over number of data points (which in the limit of infinite Gaussian data are
+the same)
 %
 \begin{equation}
     \begin{split}
-        \dcs &= \frac{\chis[\thc, D_{1}] - \chis[D_{0}, D_{1}]}{\chis[D_{0}, D_{1}]} \\
-        &= \frac{\chis[\T{(\thc - D_{1})} C^{-1} (\thc - D_{1}) - \chis[D_{0}, D_{1}]}{\chis[D_{0}, D_{1}]} \\
-        &= \frac{\chis[\T{(\thc - D_{0} + D_{0} - D_{1})} C^{-1} (\thc - D_{0} + D_{0} -D_{1}) - \chis[D_{0}, D_{1}]}{\chis[D_{0}, D_{1}]} \\
-        &= \frac{ \chis[\thc, D_{0}] + 2 \T{(\thc - D_{0})} C^{-1} (D_{0} - D_{1}) }{\chis[D_{0}, D_{1}]}
+        \dcs &= \frac{1}{n}\left[ \sum_{i=1}^{n} \frac{(z_i -
+        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} - 
+        \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2} \right] \\
+        &= \frac{1}{n}\left[ \sum_{i=1}^{n} \frac{(z_i - f(x_i) + f(x_i) -
+        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} - 
+        \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2} \right] \\
+        &= \frac{1}{n} \left[ \sum_{i=1}^{n} \frac{(f(x_i) -
+        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} - 
+        2\sum_{i=1}^n \frac{(z_i - f(x_i))(\Ebb_{\epsilon}\left[g(x_i,\theta_D)\right] - f(x_i))}{\sigma^2}\right]
     \end{split}
     \label{eq: deltachi2tobias}
 \end{equation}
 %
-we recognise the first term in the numerator as the bias, the second term is not
-instantly recognisable. However we know the shift, $D_{0} - D_{1}$ by construction
+we recognise the first term in the numerator as the bias, and the second term
+as the cross term which appeared in \eqref{eq:NNPDFGenErr}. This completes
+our understanding of closure test estimators and how they link to both
+expectation of $\chi^2$ across replicas, Summarising:
 %
-\begin{equation}
-    \begin{split}
-        D_{0} - D_{1} &\equiv - \eta \\
-        &= - \sum_{i} \sigma_{i} \epsilon_{i} v_{i}
-    \end{split}
-\end{equation}
+\begin{align}
+    &\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}'_{n'})/n'\right] = \nonumber \\
+    & \quad = \mathrm{noise} \, + \, \mathrm{bias} \, + \, \mathrm{variance} \, - \, \mathrm{cross \ term} \\
+    & \quad = \mathrm{noise} + \dcs \, + \, \mathrm{variance} \\
+    & \quad = \chi^2[\Ebb_{\epsilon}\left[g(x_i,\theta_D)\right], \mathcal{D}_n] + \, \mathrm{variance}
+\end{align}
 %
-where $\epsilon$ is a normally distributed number, $\sigma_{i}$ is the square
-root of the $i^{\mathrm{th}}$ eigenvalue of the covariance matrix and $v_{i}$ is
-the corresponding eigenvector. We can leverage this to simplify the last line of
-\eqref{eq: deltachi2tobias}.
-%
-\begin{equation}
-    \dcs = \frac{ \chis[\thc, D_{0}] - 2 \sum_{i} \T{(\thc - D_{0})} \sigma_{i}^{-1} \epsilon_{i} v_{i} }{ \sum_{i} \epsilon_{i}^{2} }
-\end{equation}
-%
-if we move to the basis that diagonalises the covariance matrix this can be simplified to
-%
-\begin{equation}
-    \dcs = \frac{ \sum_{i}^{N_{\mathrm{data}}} \big[ 
-        \frac{(\hat{\thc} - \hat{D_{0}})_{i} (\hat{\thc} - \hat{D_{0}})_{i}}{\sigma_{i}^{2}} -
-        2 \frac{(\hat{\thc} - \hat{D_{0}})_{i} \hat{\eta}_{i}}{\sigma_{i}^{2}} \big] }{
-            \sum_{i}^{N_{\mathrm{data}}} \epsilon_{i}^{2} }
-\end{equation}
-%
-where we have used the notation that $\hat{\cdot}$ implies a vector in the
-diagonal basis. The denominator is simply a normalisation constant, and in the
-limit of infinite data tends to $N_{\mathrm{data}}$. The numerator can be
-understood as the pull of the central prediction on the level 0 data squared
-(bias) minus two times the pull of the central prediction on the level 0 times
-the pull of the level 1 data on the level 0 data. We now see that $\dcs < 0$
-corresponds to the theory prediction moving away from the level 0 data
-specifically in the direction of the level 1 data. $\dcs = 0$ does not
-necessarily refer to a perfect fit but rather that the theory prediction is
-somewhere between the level 1 shift and the underlying law such that the
-numerator cancels. Finally $\dcs > 0$ refers to the theory prediction moving
+We now see that $\dcs < 0$
+corresponds to expected value of model,
+$\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}'_{n'})/n'\right]$
+moving away from the level 0 data specifically in the direction of the level 1
+data. $\dcs = 0$ does not necessarily refer to the model perfectly reproducing the underlying law,
+although clearly this is one case which would lead to $\dcs=0$.
+Finally $\dcs > 0$ refers to the theory prediction moving
 away from the underlying law but not towards the level 1 data, which suggests a
 poor fit. 
 
@@ -200,21 +320,26 @@ These new definitions are not in conflict with the original bounds above but
 offer a bit more insight into the subtle cases where both the bias can increase,
 but $\dcs$ becomes closer to zero.
 
-We can visualise the above with simple diagrams
+We can visualise the above with a simple example in 2D, shown in figure
+\ref{fig:vectorexample}
+\newpage
 %
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=0.4\textwidth]{vectorexample2.png}
-    \caption{\small Example in 2D to visualise $\dcs$ in the diagonal basis, the
-    axis is in units of $\sigma_{i}$. $\dcs$ can be understood as the pull of
-    $\thc$ squared minus two times the dot product of pull of $\thc$ and pull of
-    level 1 data. $\dcs = 0$ for the given level 1 shift (in this case
-    $\epsilon_1, \epsilon_2 = 1$) is fulfilled at any point on the ellipsoid and
-    $\dcs<0$ and $\dcs>0$ refer to the regions inside and outside the ellipsoid
-    respectively.}
+    \includegraphics[width=\textwidth]{bias_variance_deltachi2_figure.pdf}
+    \caption{example in 2D to visualise closure estimators, the axis
+    is in units of $1/\sigma_{i}$ with $f(x_i)$ sitting at the origin.
+    $\dcs=0$ is represented by the red dashed
+    ellipse, with $\dcs < 0$ and $\dcs > 0$ being inside and outside the ellipse
+    respectively. Bias is $|u_i|^2$, noise is $|\eta_i|^2$ and variance is
+    represented by the blue dashed line, as some ellipse centred on
+    $\mathbb{E}_{\epsilon}\left[ g(x_i, \theta_D)\right]$. We see in this
+    particular example that $\dcs=0$ however the expectation of the model does
+    not reproduce the underlying law.}
     \label{fig:vectorexample}
 \end{figure}
 %
+
 It is clear that the full story of whether a fit is better or not is given not
 by a single estimator, but rather on the 3 estimators combined. We now turn to
 some example results from level 2 closure tests with the \nfit code to see if we
