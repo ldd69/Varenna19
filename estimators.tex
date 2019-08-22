@@ -10,7 +10,7 @@ data points, which we denote $D_n=\left(x,y\right)$, where $x,y \in \Rn$,
 generated according to some noisy model:
 \begin{equation}
     \label{eq:NoisyData}
-    y_i = f(x_i) + \epsilon_i\, ,    
+    y_i = f(x_i) + \epsilon_i\, ,
 \end{equation}
 where $\epsilon\sim\mathcal{N}(0,\sigma)$. The function $g(x,\theta)$, which
 depends on a set of parameters $\theta$, allows us to predict the value of $y$
@@ -18,18 +18,15 @@ for a new data point $x_{n+1}$. It is obtained by minimizing some cost function,
 \eg
 \begin{equation}
     \label{eq:CostFuncChi}
-    % TODO: Consider changing this to \chi^2(g(x,\theta); D_n)
-    % (clearly the chi2 of the function depending on theta compared to D_n)
-    % possibly this is unneccessary though: should define mathcal D as level 1
-    \chi^2(\theta; D_n) = \sum_{i=1}^n 
+    \chi^2(\theta; D_n) = \sum_{i=1}^n
     \frac{\Big(
         y_i - g(x_i,\theta)
-    \Big)^2}{\sigma^2}\, . 
+    \Big)^2}{\sigma_i^2}\, .
 \end{equation}
-Note that in this case we are using the same $\sigma$ for all data points, and
-therefore the denominator in the definition of $\chi^2$ is just an irrelevant
-overall normalization. It is easy to generalize the discussion to the case of a
-proper covariance matrix. The best fit for a given set of data is 
+Note that whilst here we are considering the case of a diagonal covariance matrix.
+All of the arguments hold when there are correlations, since we can easily just
+consider everything in the basis which diagonalises the covariance matrix. The
+best fit for a given set of data is
 \begin{equation}
     \label{eq:ThetaMin}
     \theta_D = {\arg\min}_\theta \chi^2(\theta; D_n)\, .
@@ -38,7 +35,7 @@ proper covariance matrix. The best fit for a given set of data is
 %Clearly the value of $\chi^2$ at the minimum depends on the particular dataset
 %\begin{equation}
 %    \label{eq:ChiAtMin}
-%    \chi^2_\mathrm{min}=\chi^2(\theta_D; D_n)\, . 
+%    \chi^2_\mathrm{min}=\chi^2(\theta_D; D_n)\, .
 %\end{equation}
 %We will be drawing an ensemble of datasets from the distribution above,
 %and denote by $\mathbb{E}_D$ the average over these datasets.
@@ -54,7 +51,7 @@ error is then defined as
     \chi^2(\theta_D; D'_{n'}) = \sum_{i=1}^{n'}
     \frac{\Big(
         y'_i - g(x'_i,\theta_D)
-    \Big)^2}{\sigma^2}\, ,
+    \Big)^2}{\sigma_i^2}\, ,
 \end{equation}
 where we have very explicitly defined that the generalization error is where we
 take the function $g$ with parameters fitted on $D_n$ and then calculate the
@@ -69,29 +66,29 @@ The generalization error can then be decomposed, with the expectation over
 $\epsilon$ taken
 \begin{align}
     \label{eq:GenErr}
-    &\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; D_n)/n\right] = \nonumber \\
+    &\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; D'_{n'})/n'\right] = \nonumber \\
     &\quad = \mathbb{E}_{\epsilon}\left[
-        \frac{1}{n}\, \sum_{i=1}^n 
+        \frac{1}{n'}\, \sum_{i=1}^{n'}
         \frac{\Big(
-            y_i - g(x_i,\theta_D)
-        \Big)^2}{\sigma^2}   
+            y'_i - g(x'_i,\theta_D)
+        \Big)^2}{\sigma_i^2}
     \right] \\
-    &\quad = \frac{1}{n}\, \sum_{i=1}^n \left[
+    &\quad = \frac{1}{n'}\, \sum_{i=1}^{n'} \left[
         \frac{\mathbb{E}_\epsilon\left[
-            \Big(y_i - f(x_i)\Big)^2    
-        \right]}{\sigma^2}    
-        + \frac{\mathbb{E}_{\epsilon}\left[\Big(f(x_i)-g(x_i,\theta_D)\Big)^2\right]}{\sigma^2}
+            \Big(y'_i - f(x'_i)\Big)^2
+        \right]}{\sigma_i^2}
+        + \frac{\mathbb{E}_{\epsilon}\left[\Big(f(x'_i)-g(x'_i,\theta_D)\Big)^2\right]}{\sigma_i^2}
     \right] \\
-    &\quad = 1 + \frac{1}{n}\, \sum_{i=1}^n \left[
-            \frac{\Big(f(x_i) - \mathbb{E}_{\epsilon}\left[g(x_i,\theta_D)\right]\Big)^2}{\sigma^2}
+    &\quad = 1 + \frac{1}{n'}\, \sum_{i=1}^{n'} \left[
+            \frac{\Big(f(x'_i) - \mathbb{E}_{\epsilon}\left[g(x'_i,\theta_D)\right]\Big)^2}{\sigma_i^2}
         \right] + \nonumber \\
     &\quad \quad +
-        \frac{1}{n}\, \sum_{i=1}^n \left[
+        \frac{1}{n'}\, \sum_{i=1}^{n'} \left[
             \frac{
-                \Ebb_{\epsilon}\left[\Big(g(x_i,\theta_D) - 
-                \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right]\Big)^2\right]
-            }{\sigma^2}
-        \right]\, . 
+                \Ebb_{\epsilon}\left[\Big(g(x'_i,\theta_D) -
+                \Ebb_{\epsilon}\left[g(x'_i,\theta_D)\right]\Big)^2\right]
+            }{\sigma_i^2}
+        \right]\, .
 \end{align}
 These three contributions are known as {\em Noise}, {\em Bias}\ and {\em Variance}
 respectively.
@@ -122,7 +119,7 @@ like
     \chi^2(\theta_D; \mathcal{D}_{n}) = \sum_{i=1}^{n}
     \frac{\Big(
         \levone_i - g(x_i,\theta_D)
-    \Big)^2}{\sigma^2}\, ,
+    \Big)^2}{\sigma_i^2}\, ,
 \end{equation}
 the $\chi^2$ of a given replica function on the level 1 data. We can still
 consider calculating this object on a test set $\mathcal{D}'_{n'}$ and then
@@ -130,40 +127,40 @@ taking the expectation across replicas and perform the decomposition as before
 \begin{align}
     & \mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}'_{n'})/n'\right] = \nonumber\\
     & \quad = \mathbb{E}_{\epsilon}\left[
-        \frac{1}{n'}\, \sum_{i=1}^{n'} 
+        \frac{1}{n'}\, \sum_{i=1}^{n'}
         \frac{\left(
             \levone'_i - g(x'_i,\theta_D)
-        \right)^2}{\sigma^2}   
+        \right)^2}{\sigma_i^2}
     \right] \\
     & \quad = \frac{1}{n'}\, \sum_{i=1}^{n'} \Bigg[
         \frac{\left[
-            \left(\levone'_i - f(x'_i)\right)^2    
-        \right]}{\sigma^2}    
+            \left(\levone'_i - f(x'_i)\right)^2
+        \right]}{\sigma_i^2}
         + \frac{
             \mathbb{E}_{\epsilon}\left[\left(f(x'_i)-g(x'_i,\theta_D)\right)^2\right]
-            }{\sigma^2} + \nonumber \\
+            }{\sigma_i^2} + \nonumber \\
     & \quad \quad + 2\frac{\mathbb{E}_{\epsilon}
     \left[
         \left(\levone'_i - f(x'_i)\right)\left(f(x'_i)-g(x'_i,\theta_D)\right)
-    \right]}{\sigma^2}
+    \right]}{\sigma_i^2}
     \Bigg] \\
     & \quad = \frac{1}{n'}\, \sum_{i=1}^{n'}
-        \frac{{\eta'}_i^2}{\sigma^2} +
+        \frac{{\eta'}_i^2}{\sigma_i^2} +
     \frac{1}{n'}\, \sum_{i=1}^{n'} \frac{
         \left(f(x'_i) - \mathbb{E}_{\epsilon}\left[g(x'_i,\theta_D)\right]\right)^2
-        }{\sigma^2} + \nonumber \\
+        }{\sigma_i^2} + \nonumber \\
     & \quad \quad +
     \frac{1}{n'}\, \sum_{i=1}^{n'} \frac{
-                \Ebb_{\epsilon}\left[\Big(g(x'_i,\theta_D) - 
+                \Ebb_{\epsilon}\left[\Big(g(x'_i,\theta_D) -
                 \Ebb_{\epsilon}\left[g(x'_i,\theta_D)\right]\Big)^2\right]
-            }{\sigma^2} + \nonumber \\
+            }{\sigma_i^2} + \nonumber \\
     & \quad \quad -
     \frac{1}{n'}\, 2 \sum_{i=1}^{n'} \frac{\mathbb{E}_{\epsilon}
         \left[
             \left(\levone'_i - f(x'_i)\right)\left(g(x'_i,\theta_D) - f(x'_i)\right)
-        \right]}{\sigma^2} \, . \label{eq:NNPDFGenErr}
+        \right]}{\sigma_i^2} \, . \label{eq:NNPDFGenErr}
 \end{align}
-In the final line we now have 4 terms, the level 1 {\em Noise},
+In \eqref{eq:NNPDFGenErr} we now have 4 terms, the level 1 {\em Noise},
 {\em Bias}, {\em Variance} and a cross term respectively.
 
 \paragraph[]{Note:} It's important to note that whilst the $\chi^2$ here was
@@ -178,7 +175,7 @@ The cross term can
 be thought of as the pull of the level 1 data on the underlying law times by
 the pull of the fitted function on the underlying law. Take care with the minus
 sign that was brought out the front of the cross term. The expectation over
-$\epsilon$ of the \nnpdf\ generalization error is currently called 
+$\epsilon$ of the \nnpdf\ generalization error is currently called
 $\langle \chi^2 \rangle$ in our reports with the key difference being that
 $\chi^2$ calculated on some test set of data. At present in a closure
 test report by default we have
@@ -209,7 +206,7 @@ central prediciction is away from the underlying law, explictly defined as
 \begin{equation}
     \label{eq:Biasdef}
     \mathrm{bias} = \frac{1}{n} \sum_{i=1}^{n} \frac{(f(x_i) -
-    \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} \, .
+    \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma_i^2} \, .
 \end{equation}
 %
 Since we are aiming to produce the PDF set, the goal of a fit is to reproduce
@@ -233,9 +230,9 @@ different name $\varphi$, in the case of a closure defined as
 \begin{equation}
     \begin{split}
         \mathrm{variance} &= \frac{1}{n}\, \sum_{i=1}^{n} \frac{
-            \Ebb_{\epsilon}\left[\Big(g(x_i,\theta_D) - 
+            \Ebb_{\epsilon}\left[\Big(g(x_i,\theta_D) -
             \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right]\Big)^2\right]
-        }{\sigma^2} \, .
+        }{\sigma_i^2} \, .
     \end{split}
 \end{equation}
 %
@@ -253,7 +250,7 @@ within. A high bias low variance PDF would clearly be problematic.
 \subsubsection*{Delta chi2}
 
 The final estimator, $\dcs$, doesn't obviously appear in the decomposition of \newline
-$\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}_{n})/n'\right]$. 
+$\mathbb{E}_{\epsilon}\left[\chi^2(\theta_D; \mathcal{D}_{n})/n'\right]$.
 When it was introduced it was said to describe how well the model matched the
 underlying law. We start with the definition of the $\dcs$ with the notation
 used in this note
@@ -261,16 +258,16 @@ used in this note
 \begin{equation}
         \dcs = \frac{
             \sum_{i=1}^{n} \frac{(z_i -
-            \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} -
-            \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2}}{
-                \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2}} \, .
+            \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma_i^2} -
+            \sum_{i=1}^n \frac{\eta_i^2}{\sigma_i^2}}{
+                \sum_{i=1}^n \frac{\eta_i^2}{\sigma_i^2}} \, .
 \end{equation}
 Alongside $\dcs$ there were some bounds:
 %
 \begin{itemize}
     \item $\dcs < 0$ overfitting
     \item $\dcs = 0$ perfect fit
-    \item $\dcs > 0$ underfitting 
+    \item $\dcs > 0$ underfitting
 \end{itemize}
 %
 which seem intuitive but the discussion of these bounds implies that bias and
@@ -282,14 +279,16 @@ the same)
 \begin{equation}
     \begin{split}
         \dcs &= \frac{1}{n}\left[ \sum_{i=1}^{n} \frac{(z_i -
-        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} - 
-        \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2} \right] \\
+        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma_i^2} -
+        \sum_{i=1}^n \frac{\eta_i^2}{\sigma_i^2} \right] \\
         &= \frac{1}{n}\left[ \sum_{i=1}^{n} \frac{(z_i - f(x_i) + f(x_i) -
-        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} - 
-        \sum_{i=1}^n \frac{\eta_i^2}{\sigma^2} \right] \\
+        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma_i^2} -
+        \sum_{i=1}^n \frac{\eta_i^2}{\sigma_i^2} \right] \\
         &= \frac{1}{n} \left[ \sum_{i=1}^{n} \frac{(f(x_i) -
-        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma^2} - 
-        2\sum_{i=1}^n \frac{(z_i - f(x_i))(\Ebb_{\epsilon}\left[g(x_i,\theta_D)\right] - f(x_i))}{\sigma^2}\right]
+        \Ebb_{\epsilon}\left[g(x_i,\theta_D)\right])^2}{\sigma_i^2} -
+        2\sum_{i=1}^n \frac{
+            (z_i - f(x_i))(\Ebb_{\epsilon}\left[g(x_i,\theta_D)\right] - f(x_i))}{
+                \sigma_i^2}\right]
     \end{split}
     \label{eq: deltachi2tobias}
 \end{equation}
@@ -314,7 +313,7 @@ data. $\dcs = 0$ does not necessarily refer to the model perfectly reproducing t
 although clearly this is one case which would lead to $\dcs=0$.
 Finally $\dcs > 0$ refers to the theory prediction moving
 away from the underlying law but not towards the level 1 data, which suggests a
-poor fit. 
+poor fit.
 
 These new definitions are not in conflict with the original bounds above but
 offer a bit more insight into the subtle cases where both the bias can increase,
@@ -329,9 +328,10 @@ We can visualise the above with a simple example in 2D, shown in figure
     \includegraphics[width=\textwidth]{bias_variance_deltachi2_figure.pdf}
     \caption{example in 2D to visualise closure estimators, the axis
     is in units of $1/\sigma_{i}$ with $f(x_i)$ sitting at the origin.
+    The black solid line is the $1 \sigma$ contour of the level 1 noise.
     $\dcs=0$ is represented by the red dashed
     ellipse, with $\dcs < 0$ and $\dcs > 0$ being inside and outside the ellipse
-    respectively. Bias is $|u_i|^2$, noise is $|\eta_i|^2$ and variance is
+    respectively.\,{\em Bias} is $|u_i|^2$, {\em Noise} is $|\eta_i|^2$ and {\em Variance} is
     represented by the blue dashed line, as some ellipse centred on
     $\mathbb{E}_{\epsilon}\left[ g(x_i, \theta_D)\right]$. We see in this
     particular example that $\dcs=0$ however the expectation of the model does
