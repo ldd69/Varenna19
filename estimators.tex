@@ -41,10 +41,10 @@ best fit for a given set of data is
 %and denote by $\mathbb{E}_D$ the average over these datasets.
 Clearly the parameters which minimise $\chi^2$ for a given set of data points
 depends on $D_n$, denoted by the subscript $D$. In the end we are interested in
-defining a generalisation error on a finite set of total data which we split
+defining a generalization error on a finite set of total data which we split
 into two subsets, data used in the training procedure
 (both training and validation) which we denote as $\{ D \}$
-and data used as a test set which we define as $\{ D' \}$. The generalisation
+and data used as a test set which we define as $\{ D' \}$. The generalization
 error is then defined as
 \begin{equation}
     \label{eq:DefGenErr}
@@ -272,7 +272,7 @@ Alongside $\dcs$ there were some bounds:
 %
 which seem intuitive but the discussion of these bounds implies that bias and
 $dcs$ are linked, which is not immediately obvious. We can rewrite
-$\dcs$ removing the normalisation over the noise and replacing with normalisation
+$\dcs$ removing the normalization over the noise and replacing with normalization
 over number of data points (which in the limit of infinite Gaussian data are
 the same)
 %
@@ -341,7 +341,21 @@ We can visualise the above with a simple example in 2D, shown in figure
 %
 
 It is clear that the full story of whether a fit is better or not is given not
-by a single estimator, but rather on the 3 estimators combined. We now turn to
-some example results from level 2 closure tests with the \nfit code to see if we
-can say something about the different architectures used in each one.
+by a single estimator, but rather a combination of the estimators.
 
+\subsubsection*{Summary}
+
+\begin{itemize}
+    \item Bias is the measure on whether we reproduce underlying law
+    \item $\dcs$ gives an idea of where expected value of model is with relation
+        to both underlying law and level 1 data
+    \item All closure test estimators must be defined with same covariance matrix
+        for a consistent picture, in the end this is what seperates sqrt(Variance) from $\phi$
+        in the context of adding a theory uncertainty
+    \item Whilst in fit to experimental data we don't have access to bias,
+        figure \ref{fig:vectorexample} highlights that in a PDF fit we are not
+        necessarily interested in the value of $\chis$ to the experimental data
+        if we have high confidence that our model has low bias, which we can
+        show with rigorous closure tests. Although low $\chis$ is probably
+        preferred on a political level.
+\end{itemize}
