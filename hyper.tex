@@ -15,12 +15,12 @@ such that
 \end{equation}
 where the average here is over the fluctuations of $y$. Our knowledge of the function $f$ is encoded in the probability distribution function of $f(x)$ for each value of $x$. At the beginning of the process we need to choose a prior distribution for these values. The prior distribution is then updated according to the value of noisy measurements of $f$ at given values of $x$.  
 
-Bayesian Optimization is an algorithm that performs a sequential search by
+Bayesian Optimization is an algorithm that performs a {\em sequential} search by
 selecting at every step a position $x$ in $\Omega$ according to some acquisition
 function, and computing the corresponding value of $y$. After $\nopt$ iterations
 the algorithm yields its current best estimate of the position of the minimum.
 The procedure is summarised in Fig.~\ref{fig:BOpt}, taken from
-Ref.~\cite{Shahriari}.
+Ref.~\cite{shahriari2015taking}.
 
 \begin{figure}[ht!]
     \label{fig:BOpt}
@@ -134,3 +134,62 @@ and the acquisition function is defined as above by taking the expectation value
     \alpha_\EI \left(x;\mathcal{D}_n\right) = 
     \Ebb_{v|\mathcal{D}_n}\left[U(v,x)\right]\, .
 \end{equation}
+For the case of the GP, the expectation value above can be computed explicitly
+\begin{equation}
+    \label{eq:EIAcqGP}
+    \alpha_\EI \left(x;\mathcal{D}_n\right) = 
+    \left(\mu_n(x)-\tau\right) \, 
+    \Phi\left(\frac{\mu_n(x)-t}{\sigma_n(x)}\right)
+    + \sigma_n(x) \phi\left(\frac{\mu_n(x)-t}{\sigma_n(x)}\right)\, ,
+\end{equation}
+where $\phi$ is the standard normal probability density. The target value $\tau$
+can be adjusted adaptively during the minimization process.
+
+\paragraph[]{Optimistic policies}
+
+The Gaussian process upper confidence bound (GP-UCB) is defined by the
+acquisiton function 
+\begin{equation}
+    \label{eq:GB-UCB}
+    \alpha_\mathrm{UCB}\left(x;\mathcal{D}_n\right) = 
+        \mu_n(x) + \beta_n \sigma_n(x)
+\end{equation}
+where $\beta_n$ is a parameter that can be tuned, just like $\tau$ in the case
+of improvement-based algorithms. See \eg\ Ref.~\cite{Srinivas_2012} for a
+detailed discussion.  
+
+\paragraph[]{Information-based policies}
+
+These policies are based on some knowledge of the posterior distribution of the minimizer $x^*$.
+
+{\em Thompson sampling}\ is an example of information-based policies. The
+algorithm samples the reward function $f$ using the posterior determined by the
+data, and selects the value of $x$ that maximises the simulated reward. In other words
+\begin{equation}
+    \label{eq:TSAcq}
+    \alpha_\mathrm{TS}\left(x;\mathcal{D}_n\right) = 
+    f^{(n)}(x)\, ,
+\end{equation} 
+where $f^{(n)}\sim \mathrm{GP}\left(\mu,k|\mathcal{D}_n\right)$.
+
+{\em Entropy search}\ algorithms choose the next point $x$ by maximising the
+reduction in entropy of the distribution $p_*(x|\mathcal{D}_n)$. The utility
+function is 
+\begin{equation}
+    \label{eq:ESUtil}
+    U(x,v) = H\left(x^*|\mathcal{D}_n\right) - 
+    H\left(x^*|\mathcal{D}_n \cup \left\{x,v\right\}\right)\, .
+\end{equation}
+Here we need to clarify the definition in Ref.~\cite{shahriari2015taking}. See
+Ref.~\cite{hernandez2014predictive} for details. The acquisition function is
+obtained by taking the average over $v$: 
+\begin{equation}
+    \label{eq:ESAcq}
+    \alpha_\mathrm{ES}\left(x;\mathcal{D}_n\right) = 
+    H\left(x^*|\mathcal{D}_n\right) - 
+    \Ebb_{v|\mathcal{D}_n}\left[H\left(x^*|\mathcal{D}_n \cup \left\{x,v\right\}\right)\right]\, ,
+\end{equation}
+where $H\left(x^*|\mathcal{D}_n\right)$ is the differential entropy of the
+posterior distribution $p_*(x|\mathcal{D}_n)$. See
+Refs.~\cite{hennig2012entropy,villemonteix2009informational} for details, and
+other variations like {\em predictive entropy}\ search. 
