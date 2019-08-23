@@ -1,3 +1,5 @@
+\newcommand{\hyperopt}{\texttt{Hyperopt}}
+
 \section{Hyper-optimization}
 \label{sec:hyper-opt}
 
@@ -192,4 +194,103 @@ obtained by taking the average over $v$:
 where $H\left(x^*|\mathcal{D}_n\right)$ is the differential entropy of the
 posterior distribution $p_*(x|\mathcal{D}_n)$. See
 Refs.~\cite{hennig2012entropy,villemonteix2009informational} for details, and
-other variations like {\em predictive entropy}\ search. 
+other variations like {\em predictive entropy}\ search.
+
+\subsection{Tree-structured Parzen Estimator}
+
+Tree-structured Parzen Estimator (TPE) is another approach to hyper-optimization.
+The main difference between TPE and the approach taken in section \ref{sec:BaysParMod}
+is that in TPE instead of trying to estimate the distribution of $p(y|x)$, instead
+$p(x|y)$ and $p(y)$ are estimated.
+
+The TPE algorithm is in paticular interest to us, since it is the algorithm which
+is used in the \hyperopt\ library, which is used by \nfit to perform hyperparameter
+scans.
+
+Before taking the tool of \hyperopt\ to the closure test machinery, it seems wise
+to understand exactly what \hyperopt\ is doing, whilst the library is open source
+and popular in the data science community, one is at risk of treating the library
+as a black box, which doesn't seem wise when it is informing our choices of hyperparameters
+for the next big release.
+
+\paragraph[]{Utility function in \hyperopt.} The utility function used in \hyperopt\
+is the expected improvement defined as
+\begin{equation}
+    \label{eq:expectedimp}
+    \mathrm{EI}_{y^{*}}(x) \equiv \int_{- \infty}^{\infty} \max(y^{*} - y, 0)p(y|x) {\rm d} y \,
+\end{equation}
+where $y^{*}$ can be understood as some threshold which we want $y$ to negatively exceed.
+In practice, we have $\{y\}$, a set of noisey estimates of a function, $f(x)$, which
+is something we want to minimise, such as validation $\chis$. Then we set $y^*$
+such that it is the boundary of a quantile, $\gamma$, of $\{y\}$.
+
+The model then says the following
+\begin{equation}
+    p(x|y) =
+    \begin{cases}
+        &l(x) \text{ if } y<y^* \\
+        &g(x) \text{ if } y\geq y*
+    \end{cases} \, ,
+\end{equation}
+where $l(x)$ and $g(x)$ are non-parametric distributions and
+\begin{align}
+    p(x) &= \int_{- \infty}^{\infty} p(x|y)p(y){\rm d} y \\
+    &= \int_{- \infty}^{y^*} l(x)p(y){\rm d} y + \int_{y^*}^{\infty} g(x)p(y){\rm d} y \nonumber\\
+    &= \gamma l(x) + (1-\gamma)g(x) \label{eq:defpxhyp} \, .
+\end{align}
+The expression for $p(x)$ given in \eqref{eq:defpxhyp} is purely by construction:
+we haven't modelled $p(y)$ at all. The strength of this construction is apparent
+when returning to \eqref{eq:expectedimp}
+\begin{align}
+    \mathrm{EI}_{y^{*}}(x) &= \int_{- \infty}^{y^*} (y^{*} - y)\frac{l(x)p(y)}{p(x)} {\rm d} y\\
+    &= \left[y^* \gamma - \int_{- \infty}^{y^*} yp(y) {\rm d} y \right]\left( \gamma + (1-\gamma)\frac{g(x)}{l(x)}\right)^{-1} \\
+    & \propto \left( \gamma + (1-\gamma)\frac{g(x)}{l(x)}\right)^{-1}
+\end{align}
+the important result is that by construction the $x$ dependence of the expected
+improvement is all contained within a inverse proportionality relationship
+between $\mathrm{EI}_{y^{*}}(x)$ and the ratio of $g(x)/l(x)$. The acquisition
+function then simply draws candidates from $l(x)$ and then chooses the set of parameters
+which maximises the ratio of $l(x)/g(x)$. This set of parameters is then used
+to make a new observation, the union is taken with previous measurements $\{x, y\}$
+and then $l(x)$ and $g(x)$ are updated, adding weight where there are observations.
+
+So far not much has been said about $l(x)$ and $g(x)$ but the priors for these
+are usually chosen as uniform, log-uniform or discrete uniform distributions
+depending on the corresponding hyperparameter. Then at each step of the
+hyper-optimization these distributions are updated to posterior distributions.
+\paragraph[]{Uniform prior} by
+mixing in equal weight the prior distribution and gaussians placed at the locations of observations
+$(x_i, y_i)$.
+\paragraph[]{Log-uniform prior}
+mixing in equal weight the prior distribution and exponentiated gaussians placed
+at the locations of observations $(x_i, y_i)$.
+\paragraph[]{Discrete uniform}
+suppose the initial probability was an N vector of probabilities $p_i$, then
+the posterior probabilities will be proportional to $Np_i + c_i$ where $c_i$ is
+the number of occurences of that observation.
+\paragraph{}
+This pushes the algorithm towards choosing search locations with
+higher density in $l(x)$. The nice thing about TPE is that it doesn't rely on knowing
+much about the prior distributions, and instead starts with conservative prior
+distribtions on the hyperparameters and then updates these slowly with each new
+observation.
+
+Important notes on the specific \hyperopt\ implementation that we are using:
+\begin{itemize}
+    \item $\gamma$ is set by default to 0.25
+    \item 24 candidates are drawn from $l(x)$ in the inner loop of each step of
+        the \hyperopt\ routine
+    \item 20 startup observations are made using random search with the priors before
+        TPE actually starts doing any Bayesian optimization.
+    \item The width of the Gaussian distributions mixed in the posterior
+    distributions of $l(x)$ is set to have standard deviation of the distance to
+    the furthest of either the right or left neighbour (including the initial
+    boundaries of the uniform distribtion)
+\end{itemize}
+
+So far the function which is to be minimised, $f(x)$ has remained rather vague
+however it is clear that in a closure test, where the objective is to select a
+model which generalizes the underlying law the best we would pick a model
+which minimises the bias for a test set consistently across different test sets
+and different underlying laws. One should check that by minimising the bias on
+the test set that the variance of the model has not been detrimentally affected
