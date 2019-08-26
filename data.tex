@@ -4,13 +4,25 @@
 \subsection{Data distributions}
 \label{eq:data-distr}
 For each experiment we want to check the experimental covariance matrix that has
-been implemented in the \nnpdf code. Ideally we want this check to be
-implemented as part of \valid. 
+been implemented in the \nnpdf\ code. Ideally we want this check to be
+implemented as part of \valid.
 
 We should always work in the basis of eigenvectors of the covariance matrix. The
 first step when implemnting experiments should be the diagonalization of the
 covariance matrix, checking the eigenvectors. The matrix should also be
 projected on the nearest positive definite matrix, so that any numerical
-instability is under control. 
+instability is under control.
 
-{\bf MW to write}
+The basis of eigenvectors of the covariance matrix is a natural way to
+represent the data before performing and training, validation or test splits
+since the new data points are uncorrelated form the perspective from the fit.
+Even if we are not transforming the data we should be concerned when the condition
+number of a given dataset covariance matrix, or given experiment covariance matrix
+is high. In this section we being by simply listing the condition numbers of
+the global datasets and experiments.
+
+If the condition numbers are found to be high then we can try a number of prescriptions, either
+normalising by the data central value or setting any eigenvalues below some threshold according
+to an acceptable condition number and the maximum eigenvalue.
+
+Will update this section after Zahari's talk/speaking with Zahari.

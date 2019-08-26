@@ -7,7 +7,7 @@ We want to address the problem of finding the minimum of an {\em unknown}\ funct
 \begin{equation}
     \label{eq:FDef}
     f: \Omega \to \mathbb{R}\, ,
-\end{equation} 
+\end{equation}
 where $\Omega$ is a compact subset of $\Rd$. Although $f$ is unknown, we assume
 that we can perform {\em noisy}\ estimates of $y=f(x)$ for given values of $x$,
 such that
@@ -15,7 +15,7 @@ such that
     \label{eq:UnbiasedEval}
     \Ebb\left[y|f(x)\right] = f(x)\, ,
 \end{equation}
-where the average here is over the fluctuations of $y$. Our knowledge of the function $f$ is encoded in the probability distribution function of $f(x)$ for each value of $x$. At the beginning of the process we need to choose a prior distribution for these values. The prior distribution is then updated according to the value of noisy measurements of $f$ at given values of $x$.  
+where the average here is over the fluctuations of $y$. Our knowledge of the function $f$ is encoded in the probability distribution function of $f(x)$ for each value of $x$. At the beginning of the process we need to choose a prior distribution for these values. The prior distribution is then updated according to the value of noisy measurements of $f$ at given values of $x$.
 
 Bayesian Optimization is an algorithm that performs a {\em sequential} search by
 selecting at every step a position $x$ in $\Omega$ according to some acquisition
@@ -31,17 +31,17 @@ Ref.~\cite{shahriari2015taking}.
     \caption{\small Summary of the Bayesian Optimization procedure.}
 \end{figure}
 
-\paragraph[]{Summary} The important ingredients in BO are the following. 
+\paragraph[]{Summary} The important ingredients in BO are the following.
 %
 \begin{enumerate}
-    \item[$\bullet$] Choice of the space of parameters, which we denoted $\Omega$ above.  
-    \item[$\bullet$] Choice of the loss function $f$, and methodology to evaluate it. 
+    \item[$\bullet$] Choice of the space of parameters, which we denoted $\Omega$ above.
+    \item[$\bullet$] Choice of the loss function $f$, and methodology to evaluate it.
     \item[$\bullet$] Update of the prior distribution for $f(x)$.
     \item[$\bullet$] Choice of the acquisition function $\alpha$.
-    \item[$\bullet$] Choice of the value of $x$ for a new measurement, given the acquisition function.   
+    \item[$\bullet$] Choice of the value of $x$ for a new measurement, given the acquisition function.
 \end{enumerate}
 %
-We need to specify each of these steps in our procedure. 
+We need to specify each of these steps in our procedure.
 
 
 \subsection{Parametric Models}
@@ -50,7 +50,7 @@ We need to specify each of these steps in our procedure.
 There are interesting results on parametric models, which are useful to
 understand the idea behind BO. In parametric models the function $f$ is
 specified by a set of parameters $w$. The current knowledge of $f$ is then
-encoded in the probability distribution of these parameters. 
+encoded in the probability distribution of these parameters.
 
 \paragraph[]{Explicit Examples}
 
@@ -63,19 +63,19 @@ function $\mu: \Omega\to \Rbb$, and its kernel function $k: \Omega \times \Omega
 unknown function $f$. For a collection of points $\{x_i, i=1,\ldots,n\}$, we
 have a set of values $\{f_i=f(x_i), i=1,\ldots,n\}$ and their noisy estimates
 $\{y_i, i=1\ldots, n\}$. Remember that $x_i\in\Omega$ is a $d$-dimensional real
-vector for every value of $i$. Their respective distributions will be: 
+vector for every value of $i$. Their respective distributions will be:
 \begin{align}
     \label{eq:GPone}
-    \mathbf{f}|\mathbf{x} &\sim 
+    \mathbf{f}|\mathbf{x} &\sim
         \mathcal{N}\left(\mathbf{m},\mathbf{K}\right)\, ,\\
-    \mathbf{y}|\mathbf{f},\sigma &\sim 
+    \mathbf{y}|\mathbf{f},\sigma &\sim
         \mathcal{N}\left(\mathbf{f},\sigma^2\right)\, ,
 \end{align}
 where $m_i=\mu(x_i)$ and $K_{ij}=k(x_i,x_j)$. In Eq.~\eqref{eq:GPone} we denote
 by boldface fonts vectors and matrices in the $n$-dimensional space of
-measurements that have been performed. 
+measurements that have been performed.
 
-After $n$ observations $\mathcal{D}_n=\left\{\left(x_i,y_i\right)\right\}$, the random variable $f(x)$ is Gaussianly distributed, 
+After $n$ observations $\mathcal{D}_n=\left\{\left(x_i,y_i\right)\right\}$, the random variable $f(x)$ is Gaussianly distributed,
 \begin{equation}
     \label{eq:PostGaussF}
     f(x)\sim \mathcal{N}\left(\mu_n(x),\sigma_n(x)\right)\, ,
@@ -88,14 +88,14 @@ with
 \end{align}
 This posterior distribution encodes our knowledge of the function $f$ at a
 generic point $x\in\Omega$. It is then used to select the next point in the
-search. 
+search.
 
 \subsection{Acquisition Function}
 \label{sec:AcqFun}
 
 In BO the choice of the next point $x$ where the function $f$ is going to be
 evaluated plays a crucial role. Choosing a random point would be extremely
-inefficient, especially if the dimensionality of the space is increased. 
+inefficient, especially if the dimensionality of the space is increased.
 
 An informed choice of the point $x$ can be made from the knowledge of the
 posterior distribution of $f$, and a utility function $U(x,v)$, where $v=f(x)$.
@@ -106,17 +106,17 @@ expected utility} of a query point:
 \begin{equation}
     \label{eq:ExpUtilDef}
     \alpha(x,\mathcal{D}_n) = \Ebb_{v|\mathcal{D}_n}\left[U\left(x,v\right)\right]\, .
-\end{equation} 
+\end{equation}
 
 \paragraph[]{Improvement-based policies}
 
 The acquisition function favours points that are likely to exceed some target value $\tau$; this strategy is called {\em probability of improvement}\ (PI) and for the case of a Gaussian distribution for $f$ we obtain
 \begin{equation}
     \label{eq:AlphaPI}
-    \alpha_\PI\left(x;\mathcal{D}_n\right) = 
-    \Pbb\left[v>\tau\right] = 
+    \alpha_\PI\left(x;\mathcal{D}_n\right) =
+    \Pbb\left[v>\tau\right] =
     \Phi\left(
-        \frac{\mu_n(x)-t}{\sigma_n(x)}    
+        \frac{\mu_n(x)-t}{\sigma_n(x)}
     \right)\, ,
 \end{equation}
 where $\Phi$ is the normal cumulative distribution function, \ie\ $\Phi(\zeta)$
@@ -133,14 +133,14 @@ improvement. In this case the utility function is
 and the acquisition function is defined as above by taking the expectation value with respect to $v$:
 \begin{equation}
     \label{eq:EIAcq}
-    \alpha_\EI \left(x;\mathcal{D}_n\right) = 
+    \alpha_\EI \left(x;\mathcal{D}_n\right) =
     \Ebb_{v|\mathcal{D}_n}\left[U(v,x)\right]\, .
 \end{equation}
 For the case of the GP, the expectation value above can be computed explicitly
 \begin{equation}
     \label{eq:EIAcqGP}
-    \alpha_\EI \left(x;\mathcal{D}_n\right) = 
-    \left(\mu_n(x)-\tau\right) \, 
+    \alpha_\EI \left(x;\mathcal{D}_n\right) =
+    \left(\mu_n(x)-\tau\right) \,
     \Phi\left(\frac{\mu_n(x)-t}{\sigma_n(x)}\right)
     + \sigma_n(x) \phi\left(\frac{\mu_n(x)-t}{\sigma_n(x)}\right)\, ,
 \end{equation}
@@ -150,15 +150,15 @@ can be adjusted adaptively during the minimization process.
 \paragraph[]{Optimistic policies}
 
 The Gaussian process upper confidence bound (GP-UCB) is defined by the
-acquisiton function 
+acquisiton function
 \begin{equation}
     \label{eq:GB-UCB}
-    \alpha_\mathrm{UCB}\left(x;\mathcal{D}_n\right) = 
+    \alpha_\mathrm{UCB}\left(x;\mathcal{D}_n\right) =
         \mu_n(x) + \beta_n \sigma_n(x)
 \end{equation}
 where $\beta_n$ is a parameter that can be tuned, just like $\tau$ in the case
 of improvement-based algorithms. See \eg\ Ref.~\cite{Srinivas_2012} for a
-detailed discussion.  
+detailed discussion.
 
 \paragraph[]{Information-based policies}
 
@@ -169,26 +169,26 @@ algorithm samples the reward function $f$ using the posterior determined by the
 data, and selects the value of $x$ that maximises the simulated reward. In other words
 \begin{equation}
     \label{eq:TSAcq}
-    \alpha_\mathrm{TS}\left(x;\mathcal{D}_n\right) = 
+    \alpha_\mathrm{TS}\left(x;\mathcal{D}_n\right) =
     f^{(n)}(x)\, ,
-\end{equation} 
+\end{equation}
 where $f^{(n)}\sim \mathrm{GP}\left(\mu,k|\mathcal{D}_n\right)$.
 
 {\em Entropy search}\ algorithms choose the next point $x$ by maximising the
 reduction in entropy of the distribution $p_*(x|\mathcal{D}_n)$. The utility
-function is 
+function is
 \begin{equation}
     \label{eq:ESUtil}
-    U(x,v) = H\left(x^*|\mathcal{D}_n\right) - 
+    U(x,v) = H\left(x^*|\mathcal{D}_n\right) -
     H\left(x^*|\mathcal{D}_n \cup \left\{x,v\right\}\right)\, .
 \end{equation}
 Here we need to clarify the definition in Ref.~\cite{shahriari2015taking}. See
 Ref.~\cite{hernandez2014predictive} for details. The acquisition function is
-obtained by taking the average over $v$: 
+obtained by taking the average over $v$:
 \begin{equation}
     \label{eq:ESAcq}
-    \alpha_\mathrm{ES}\left(x;\mathcal{D}_n\right) = 
-    H\left(x^*|\mathcal{D}_n\right) - 
+    \alpha_\mathrm{ES}\left(x;\mathcal{D}_n\right) =
+    H\left(x^*|\mathcal{D}_n\right) -
     \Ebb_{v|\mathcal{D}_n}\left[H\left(x^*|\mathcal{D}_n \cup \left\{x,v\right\}\right)\right]\, ,
 \end{equation}
 where $H\left(x^*|\mathcal{D}_n\right)$ is the differential entropy of the
